@@ -1,6 +1,7 @@
 /*
     basic_test_02.c
     test if batm_update works
+    $ cc basic_test_02.c
 */
 #define _POSIX_C_SOURCE 200809L
 
