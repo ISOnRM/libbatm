@@ -7,6 +7,7 @@
 #include "../include/batm/batm.h" 
 
 
+#include <asm-generic/errno.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stddef.h>
@@ -170,40 +171,46 @@ batm_read_str(const char *path, char *out, size_t outsz)
     return 0;
 }
 
-#define BATM_READ_I64(field)                                \
-do                                                          \
-{                                                           \
-    char p[PATH_MAX];                                       \
-    snprintf(p, PATH_MAX, "%s/%s", battery_path, #field);   \
-    if (batm_read_int64(p, &snap->field) == 0)              \
-        snap->meta_scanned_fields_amt++;                    \
-    else                                                    \
-        snap->field = INT64_MIN;                            \
-}                                                           \
+#define BATM_READ_I64(field)                                        \
+do                                                                  \
+{                                                                   \
+    char p[PATH_MAX];                                               \
+    int n = snprintf(p, PATH_MAX, "%s/%s", battery_path, #field);   \
+    if (n < 0 || n >= PATH_MAX)                                     \
+        snap->field = INT64_MIN;                                    \
+    else if (batm_read_int64(p, &snap->field) == 0)                 \
+        snap->meta_scanned_fields_amt++;                            \
+    else                                                            \
+        snap->field = INT64_MIN;                                    \
+}                                                                   \
 while (0)
 
-#define BATM_READ_I32(field)                                \
-do                                                          \
-{                                                           \
-    char p[PATH_MAX];                                       \
-    snprintf(p, PATH_MAX, "%s/%s", battery_path, #field);   \
-    if (batm_read_int32(p, &snap->field) == 0)              \
-        snap->meta_scanned_fields_amt++;                    \
-    else                                                    \
-        snap->field = INT32_MIN;                            \
-}                                                           \
+#define BATM_READ_I32(field)                                        \
+do                                                                  \
+{                                                                   \
+    char p[PATH_MAX];                                               \
+    int n = snprintf(p, PATH_MAX, "%s/%s", battery_path, #field);   \
+    if (n < 0 || n >= PATH_MAX)                                     \
+        snap->field = INT32_MIN;                                    \
+    else if (batm_read_int32(p, &snap->field) == 0)                 \
+        snap->meta_scanned_fields_amt++;                            \
+    else                                                            \
+        snap->field = INT32_MIN;                                    \
+}                                                                   \
 while (0)
 
-#define BATM_READ_S(field)                                  \
-do                                                          \
-{                                                           \
-    char p[PATH_MAX];                                       \
-    snprintf(p, PATH_MAX, "%s/%s", battery_path, #field);   \
-    if (batm_read_str(p, snap->field, BATM_STR_MAX) == 0)   \
-        snap->meta_scanned_fields_amt++;                    \
-    else                                                    \
-        snap->field[0] = '\0';                              \
-}                                                           \
+#define BATM_READ_S(field)                                          \
+do                                                                  \
+{                                                                   \
+    char p[PATH_MAX];                                               \
+    int n = snprintf(p, PATH_MAX, "%s/%s", battery_path, #field);   \
+    if (n < 0 || n >= PATH_MAX)                                     \
+        snap->field[0] = '\0';                                      \
+    else if (batm_read_str(p, snap->field, BATM_STR_MAX) == 0)      \
+        snap->meta_scanned_fields_amt++;                            \
+    else                                                            \
+        snap->field[0] = '\0';                                      \
+}                                                                   \
 while (0)
 
 int
@@ -217,8 +224,18 @@ batm_snap_update(const char *base, const char *name,
     }
 
     char battery_path[PATH_MAX];
-    snprintf(battery_path, PATH_MAX,
+    int n = snprintf(battery_path, PATH_MAX,
              "%s%s", base ? base : BATM_DEFAULT_BASE, name);
+    if (n < 0)
+    {
+        /* errno is set */
+        return -1;
+    }
+    else if (n >= PATH_MAX)
+    {
+        errno = ENAMETOOLONG;
+        return -1;
+    }
 
     if (access(battery_path, R_OK) != 0)
     {
@@ -231,7 +248,7 @@ batm_snap_update(const char *base, const char *name,
 
     /* set meta: meta_name */
     /* size of name is checked above */
-    memcpy(snap->meta_name, name, strlen(name));
+    memcpy(snap->meta_name, name, strlen(name) + 1);
 
     /* scan fields */ 
     BATM_READ_S(manufacturer);
@@ -288,6 +305,7 @@ batm_snap_update(const char *base, const char *name,
 
     BATM_READ_I64(temp);
     BATM_READ_I64(temp_alert_max);
+    BATM_READ_I64(temp_alert_min);
     BATM_READ_I64(temp_min);
     BATM_READ_I64(temp_max);
 
