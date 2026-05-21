@@ -11,6 +11,7 @@
 #include <time.h>
 
 #define BATM_STR_MAX 64
+#define BATM_DEFAULT_BASE "/sys/class/power_supply/"
 
 struct batm_snap
 {
@@ -354,11 +355,9 @@ struct batm_snap
 
     Returns:
     0 on success scan and read. -1 on failure
-    (idea: maybe it would be more useful to return
-    the amount of scanned files)
 
     Errors:
-    EINVAL - !b || !s
+    EINVAL - !name || !snap || strlen(name) >= BATM_STR_MAX
     ENOENT - if battery was not found in sysfs
     EIO    - error of io/parsing
 */
