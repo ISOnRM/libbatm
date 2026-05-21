@@ -6,6 +6,7 @@
 #include "include/batm/batm.h"
 #include "src/batm.c"
 #include <string.h>
+#include <limits.h>
 #include <time.h>
 
 void
@@ -13,6 +14,9 @@ test_read(struct batm_snap *snap)
 {
 	const char *base = "/sys/class/power_supply/";
 	const char *name = "BAT1";
+
+    char battery_path[PATH_MAX];
+    snprintf(battery_path, PATH_MAX, "%s%s", base, name);
 	
     BATM_READ_I32(present);
 	BATM_READ_I64(charge_now);
