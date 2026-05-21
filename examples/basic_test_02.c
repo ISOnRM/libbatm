@@ -36,17 +36,17 @@ main(void)
     }
 
 	printf("meta fields:\n"
-           "meta_name:                  %s\n"
-		   "meta_scanned_fields_amt:    %" PRId32 "\n"
-		   "meta_snap_time:             %s\n" // ctime gives \n
+           "meta_name:                    %s\n"
+		   "meta_scanned_fields_amt:      %" PRId32 "\n"
+		   "meta_snap_time:               %s\n" // ctime gives \n
 		   "str fields:\n"
-		   "manufacturer:               %s\n"
-		   "model-name:                 %s\n"
-           "technology:                 %s\n\n"
+		   "manufacturer:                 %s\n"
+		   "model-name:                   %s\n"
+           "technology:                   %s\n\n"
 		   "int32 fields:\n"
-		   "present:                     %" PRId32 "\n"
-		   "capacity                     %" PRId32 "\n"
-		   "charge_control_end_threshold %" PRId32 "\n\n",
+		   "present:                      %" PRId32 "\n"
+		   "capacity:                     %" PRId32 "\n"
+		   "charge_control_end_threshold: %" PRId32 "\n\n",
            snap.meta_name,
            snap.meta_scanned_fields_amt,
            ctime(&snap.meta_snap_time),
