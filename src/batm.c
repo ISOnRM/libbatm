@@ -2,9 +2,10 @@
     batm.c
     implementation of batm.h
 */
+#define _POSIX_C_SOURCE 200809L
 
-/* it is this way b4 compile_commands for clangd */
-#include "../include/batm/batm.h" 
+#include "batm/batm.h" 
+
 
 #include <stdint.h>
 #include <stdlib.h>

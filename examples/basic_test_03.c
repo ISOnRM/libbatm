@@ -8,7 +8,7 @@
 #include <string.h>
 #include <errno.h>
 #include <math.h>
-#include "../include/batm/batm.h"
+#include "batm/batm.h"
 
 #define NEWLINE putc(10, stdout)
 
