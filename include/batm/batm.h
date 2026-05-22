@@ -465,9 +465,12 @@ batm_energy_full_design_wh(const struct batm_snap *s);
                 (charge_full or energy_full) is zero
     
     Formula:
-    primary:    n % = (double)capacity
-    fallback 1: n % = charge_now / charge_full * 100
-    fallback 2: n % = energy_now / energy_full * 100
+    primary:    n % = charge_now / charge_full * 100
+    fallback 1: n % = energy_now / energy_full * 100
+    fallback 2: n % = (double)capacity
+
+    Explanation:
+    fallback 2 gives the least information since it is an integer
 */
 double
 batm_soc_pct(const struct batm_snap *s);
@@ -526,6 +529,10 @@ batm_health_pct(const struct batm_snap *s);
 double
 batm_time_to_full_hr(const struct batm_snap *s);
 
+/*
+    Note:
+    Changes rapidly, use hr
+*/
 #define batm_time_to_full_s(s) (batm_time_to_full_hr((s)) * 3600.0)
 
 /*
@@ -558,6 +565,10 @@ batm_time_to_full_hr(const struct batm_snap *s);
 double
 batm_time_to_empty_hr(const struct batm_snap *s);
 
+/*
+    Note:
+    Changes rapidly, use hr
+*/
 #define batm_time_to_empty_s(s) (batm_time_to_empty_hr((s)) * 3600.0)
 
 #endif /* BATM_H */
