@@ -6,9 +6,8 @@
 /* it is this way b4 compile_commands for clangd */
 #include "../include/batm/batm.h" 
 
-
-#include <asm-generic/errno.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <stddef.h>
 #include <unistd.h>
@@ -322,4 +321,259 @@ batm_snap_update(const char *base, const char *name,
     snap->meta_snap_time = time(NULL);
 
     return snap->meta_scanned_fields_amt == 0 ? -1 : 0;
+}
+
+/*
+    Notes:
+    - all formuals are in header file above each
+      derived metric func prototype
+    - TODO: Make convenient check for isnan
+    - compiler would probably smooth some edges
+      when optimizing.
+      For example: 
+      (a) this condition check
+      s->current_now != INT64_MIN && s->voltage_now != INT64_MIN
+      or (b) this explicit type casting
+      result = (double)s->current_now * (double)s->voltage_now * 1e-12;
+      or the explicit type conversion in formulas
+      Those things are here because
+      (a) they are explicit cond checking
+      (b) they make me feel safe in formulas
+      Might change em later idk
+    - Those funcs that check status field do computations if this field is sentinel
+      as per theirs contracts
+*/
+
+double
+batm_energy_rate_w(const struct batm_snap *s)
+{
+    if (!s)
+    {
+        errno = EINVAL;
+        return NAN;
+    }
+
+    double result = NAN;
+
+    if (s->power_now != INT64_MIN)
+    {
+        result = (double)s->power_now * 1e-6;
+    }
+    else if (s->current_now != INT64_MIN && s->voltage_now != INT64_MIN)
+    {
+        result = (double)s->current_now * (double)s->voltage_now * 1e-12;
+    }
+    else
+    {
+        errno = ENODATA;
+    }
+
+    return result;
+}
+
+double
+batm_energy_full_wh(const struct batm_snap *s)
+{
+    if (!s)
+    {
+        errno = EINVAL;
+        return NAN;
+    }
+
+    double result = NAN;
+
+    if (s->energy_full != INT64_MIN)
+    {
+        result = (double)s->energy_full * 1e-6;
+    }
+    else if (s->charge_full != INT64_MIN && s->voltage_min_design != INT64_MIN)
+    {
+        result = (double)s->charge_full * (double)s->voltage_min_design * 1e-12;
+    }
+    else
+    {
+        errno = ENODATA;
+    }
+
+    return result;
+}
+
+double
+batm_energy_full_design_wh(const struct batm_snap *s)
+{
+    if (!s)
+    {
+        errno = EINVAL;
+        return NAN;
+    }
+
+    double result = NAN;
+
+    if (s->energy_full_design != INT64_MIN)
+    {
+        result = (double)s->energy_full_design * 1e-6;
+    }
+    else if (s->charge_full_design != INT64_MIN && s->voltage_min_design != INT64_MIN)
+    {
+        result = (double)s->charge_full_design * (double)s->voltage_min_design * 1e-12;
+    }
+    else
+    {
+        errno = ENODATA;
+    }
+
+    return result;
+}
+
+double
+batm_soc_pct(const struct batm_snap *s)
+{
+    if (!s)
+    {
+        errno = EINVAL;
+        return NAN;
+    }
+
+    double result = NAN;
+
+    if (s->charge_now != INT64_MIN
+        && s->charge_full != INT64_MIN
+        && s->charge_full != 0)
+    {
+        result = (double)s->charge_now / (double)s->charge_full * 100.0;
+    }
+    else if (s->energy_now != INT64_MIN
+             && s->energy_full != INT64_MIN
+             && s->energy_full != 0)
+    {
+        result = (double)s->energy_now / (double)s->energy_full * 100.0;
+    }
+    else if (s->capacity != INT32_MIN)
+    {
+        result = (double)s->capacity;
+    }
+    else
+    {
+        errno = ENODATA;
+    }
+
+    return result;
+}
+
+double
+batm_health_pct(const struct batm_snap *s)
+{
+    if (!s)
+    {
+        errno = EINVAL;
+        return NAN;
+    }
+
+    double result = NAN;
+
+    if (s->charge_full != INT64_MIN
+        && s->charge_full_design != INT64_MIN
+        && s->charge_full_design != 0)
+    {
+        result = (double)s->charge_full / (double)s->charge_full_design * 100.0;
+    }
+    else if (s->energy_full != INT64_MIN
+             && s->energy_full_design != INT64_MIN
+             && s->energy_full_design != 0)
+    {
+        result = (double)s->energy_full / (double)s->energy_full_design * 100.0;
+    }
+    else
+    {
+        errno = ENODATA;
+    }
+
+    return result;
+}
+
+double
+batm_time_to_full_hr(const struct batm_snap *s)
+{
+    if (!s)
+    {
+        errno = EINVAL;
+        return NAN;
+    }
+
+    double result = NAN;
+
+    if (s->status[0] == '\0' || strcmp(s->status, "Charging") == 0)
+    {
+        if (s->time_to_full_now != INT64_MIN)
+        {
+            result = (double)s->time_to_full_now / 3600.0;
+        }
+        else if (   s->current_now != INT64_MIN
+                 && s->current_now != 0
+                 && s->charge_now  != INT64_MIN
+                 && s->charge_full != INT64_MIN)
+        {
+            result = (double)(s->charge_full - s->charge_now) / (double)s->current_now;
+        }
+        else if (   s->power_now   != INT64_MIN
+                 && s->power_now   != 0
+                 && s->energy_now  != INT64_MIN
+                 && s->energy_full != INT64_MIN)
+        {
+            result = (double)(s->energy_full - s->energy_now) / (double)s->power_now;
+        }
+        else
+        {
+            errno = ENODATA;
+        }
+    }
+    else
+    {
+        errno = ENODATA;
+    }
+
+    return result;
+}
+
+double
+batm_time_to_empty_hr(const struct batm_snap *s)
+{
+    if (!s)
+    {
+        errno = EINVAL;
+        return NAN;
+    }
+
+    double result = NAN;
+
+    if (s->status[0] == '\0' || strcmp(s->status, "Discharging") == 0)
+    {
+        if (s->time_to_empty_now != INT64_MIN)
+        {
+            result = (double)s->time_to_empty_now / 3600.0;
+        }
+        else if (   s->current_now != INT64_MIN
+                 && s->current_now != 0
+                 && s->charge_now  != INT64_MIN)
+                 
+        {
+            result = (double)s->charge_now / (double)(llabs(s->current_now));
+        }
+        else if (   s->power_now   != INT64_MIN
+                 && s->power_now   != 0
+                 && s->energy_now  != INT64_MIN)
+        {
+            result = (double)s->energy_now / (double)(llabs(s->power_now));
+        }
+        else
+        {
+            errno = ENODATA;
+        }
+    }
+    else
+    {
+        errno = ENODATA;
+    }
+
+    return result;
 }
