@@ -4,6 +4,7 @@ AR ?= ar
 
 # flags 
 CFLAGS         ?= -std=c99 -Wall -Wextra -Wpedantic -fPIC
+LDLIBS_BATM := -lm
 
 MODE ?= release
 ifeq ($(MODE),debug)
@@ -67,6 +68,6 @@ $(BUILD)/libbatm.a: $(OBJS) | $(BUILD)
 
 # so
 $(BUILD)/libbatm.so.0.1.0: $(OBJS) | $(BUILD)
-	$(CC) -shared -Wl,-soname,libbatm.so.0 $^ -o $@
+	$(CC) -shared -Wl,-soname,libbatm.so.0 -Wl,--no-undefined $^ -o $@ $(LDLIBS_BATM)
 	cd $(BUILD) && ln -sf libbatm.so.0.1.0 libbatm.so.0
 	cd $(BUILD) && ln -sf libbatm.so.0 libbatm.so
