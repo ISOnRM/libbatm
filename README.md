@@ -77,10 +77,10 @@ int
 main(void)
 {
     struct batm_snap snap;
-    if (batm_snap_update(NULL, "BAT0", &snap) == -1) return -1;
+    if (batm_snap_update(NULL, "BAT0", &snap) == -1) return 1;
 
     double battery_health_pct = batm_health_pct(&snap);
-    if (isnan(battery_health_pct)) return -1; 
+    if (isnan(battery_health_pct)) return 1; 
     /* or don't check - printf will print "nan" */
 
     printf("Battery health: %.1f%%\n", battery_health_pct);
@@ -104,7 +104,7 @@ Battery health: 97.9%
 
 - batm_soc_pct: This is what most user interfaces label simply "battery percent"
 
-- batm_health_pct: ratio of current full-charge capacity to design capacity
+- batm_health_pct: Ratio of current full-charge capacity to design capacity
 
 - batm_time_to_full_hr/s: Estimated hours/seconds remaining until the battery is full
 
