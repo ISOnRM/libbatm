@@ -26,20 +26,20 @@ DEPS := $(OBJS:.o=.d)
 
 # install stuff
 PREFIX     ?= /usr/local
-#BINDIR     ?= $(PREFIX)/bin
+BINDIR     ?= $(PREFIX)/bin
 LIBDIR     ?= $(PREFIX)/lib
 INCLUDEDIR ?= $(PREFIX)/include
 
-.PHONY: all clean
+.PHONY: all clean install uninstall
 
-all: $(BUILD)/libbatm.a $(BUILD)/libbatm.so.0.1.0
+all: $(BUILD)/libbatm.a $(BUILD)/libbatm.so.0.1.0 $(BUILD)/batm
 
 clean:
 	rm -rf build
 
 install: all
-#	install -d $(DESTDIR)$(BINDIR)
-#   install -m 755 $(BUILD)/batm $(DESTDIR)$(BINDIR)/
+	install -d $(DESTDIR)$(BINDIR)
+	install -m 755 $(BUILD)/batm $(DESTDIR)$(BINDIR)/
 
 	install -d $(DESTDIR)$(LIBDIR)
 	install -m 644 $(BUILD)/libbatm.a            $(DESTDIR)$(LIBDIR)/
@@ -51,6 +51,12 @@ install: all
 	install -m 644 include/batm/batm.h $(DESTDIR)$(INCLUDEDIR)/batm/
 	@if [ -z "$(DESTDIR)" ]; then ldconfig; fi
 
+uninstall:
+	rm -f $(DESTDIR)$(BINDIR)/batm
+	rm -f $(DESTDIR)$(LIBDIR)/libbatm.a
+	rm -f $(DESTDIR)$(LIBDIR)/libbatm.so $(DESTDIR)$(LIBDIR)/libbatm.so.0 $(DESTDIR)$(LIBDIR)/libbatm.so.0.1.0
+	rm -f $(DESTDIR)$(INCLUDEDIR)/batm/batm.h
+	rmdir $(DESTDIR)$(INCLUDEDIR)/batm 2>/dev/null || true
 
 $(BUILD):
 	mkdir -p $@
@@ -71,3 +77,8 @@ $(BUILD)/libbatm.so.0.1.0: $(OBJS) | $(BUILD)
 	$(CC) -shared -Wl,-soname,libbatm.so.0 -Wl,--no-undefined $^ -o $@ $(LDLIBS_BATM)
 	cd $(BUILD) && ln -sf libbatm.so.0.1.0 libbatm.so.0
 	cd $(BUILD) && ln -sf libbatm.so.0 libbatm.so
+
+# cli
+$(BUILD)/batm: cli/batm.c $(BUILD)/libbatm.a | $(BUILD)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(OPTFLAGS) $< $(BUILD)/libbatm.a -lm -o $@
+
