@@ -502,8 +502,7 @@ batm_health_pct(const struct batm_snap *s);
 /*
     Description:
     Estimated hours remaining until the battery reaches full
-    charge (charge_control_end_threshold).
-    Only meaningful while status is "Charging".
+    charge. Only meaningful while status is "Charging".
     
     Arguments:
     s - pointer to a populated batm_snap
@@ -538,8 +537,7 @@ batm_time_to_full_hr(const struct batm_snap *s);
 /*
     Description:
     Estimated hours remaining until the battery is 
-    empty (not sure about min treshhold)
-    Only meaningful while status is "Discharging".
+    empty. Only meaningful while status is "Discharging".
     
     Arguments:
     s - pointer to a populated batm_snap
