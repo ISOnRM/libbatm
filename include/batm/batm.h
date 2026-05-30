@@ -436,7 +436,6 @@ batm_snap_update(const char *base,
                  struct batm_snap *snap);
 
 /* 30.05.2026: x macro for metrics */
-//  X_DBL("Unit type", function_name)
 
 /*
     Notes:

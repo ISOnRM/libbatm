@@ -1,7 +1,7 @@
 /* batm - command-line battery monitor using libbatm */
 
 #define _GNU_SOURCE
-#define BATM_CLI_VERSION "0.1.0"
+#define BATM_CLI_VERSION "0.1.1"
 
 #include <stdio.h>
 #include <stddef.h>
@@ -18,37 +18,24 @@
 static void
 print_field_str(const char *field_type, const char *field_name, const char *field)
 {
-    printf("%-11s %-28s %-28s\n", field_type, field_name, field[0] == 0 ? "(sentinel)" : field);
+    printf("%-11s %-28s %-28s\n", field_type, field_name, field);
 }
 
 static void
 print_field_i32(const char *field_type, const char *field_name, int32_t field)
 {
-    if (field == INT32_MIN)
-        printf("%-11s %-28s %-28s\n", field_type, field_name, "(sentinel)");
-    else
-     printf("%-11s %-28s %-28" PRId32 "\n", field_type, field_name, field);
+    printf("%-11s %-28s %-28" PRId32 "\n", field_type, field_name, field);
 }
 
-/*
 static void
 print_field_i64(const char *field_type, const char *field_name, int64_t field)
 {
-    if (field == INT64_MIN)
-        printf("%-11s %-28s %-28s\n", field_type, field_name, "(sentinel)");
-    else
-        printf("%-11s %-28s %-28" PRId64 "\n", field_type, field_name, field);
-    
+    printf("%-11s %-28s %-28" PRId64 "\n", field_type, field_name, field);
 }
-*/
 
 static void
 print_metric_dbl(const char *metric_type, const char *metric_name, double metric, int precision)
 {
-   
-//  if (isnan(metric) != 0)
-//      printf("%-11s %-28s %-28s\n", metric_type, metric_name, "(NAN)");
-//  else
     printf("%-11s %-28s %-28.*f\n", metric_type, metric_name, precision >= 1 ? precision : 1, metric);
 }
 
@@ -65,26 +52,36 @@ print_all(const struct batm_snap *s)
     printf("%-11s %-28s %-28s\n", "Type", "Name", "Value");
     putchar('\n');
     print_field_str("Meta Field", "meta_name", s->meta_name);
-    print_field_i32("Meta Field", "meta_scanned_fields_amt", s->meta_scanned_fields_amt);
     print_field_str("Meta Field", "meta_snap_time", buf);
+    print_field_i32("Meta Field", "meta_scanned_fields_amt", s->meta_scanned_fields_amt);
     putchar('\n');
-    print_field_i32("Field", "present", s->present);
-    print_field_str("Field", "manufacturer", s->manufacturer);
-    print_field_str("Field", "model_name", s->model_name);
-    print_field_str("Field", "technology", s->technology);
-    print_field_str("Field", "serial_number", s->serial_number);
-    print_field_str("Field", "type", s->type);
-    print_field_str("Field", "status", s->status);
-    print_field_i32("Field", "charge_control_end_threshold", s->charge_control_end_threshold);
+
+    /* all available fields */
+    #define X_STR(field) \
+    do { if (s->field[0] != 0) print_field_str("Field", #field, s->field); } while (0);
+
+    #define X_INT32(field) \
+    do { if (s->field != INT32_MIN) print_field_i32("Field", #field, s->field); } while (0);
+
+    #define X_INT64(field) \
+    do { if (s->field != INT64_MIN) print_field_i64("Field", #field, s->field); } while (0);
+
+    BATM_SNAP_FIELDS_LIST
+
+    #undef X_STR
+    #undef X_INT32
+    #undef X_INT64
+
     putchar('\n');
+
     /* 0.1.n metrics */
-    print_metric_dbl("Metric (%)", "batm_soc_pct", batm_soc_pct(s), 2);
-    print_metric_dbl("Metric (%)", "batm_health_pct", batm_health_pct(s), 2);
-    print_metric_dbl("Metric (W)", "batm_energy_rate_w", batm_energy_rate_w(s), 2);
-    print_metric_dbl("Metric (Wh)", "batm_energy_full_wh", batm_energy_full_wh(s), 2);
-    print_metric_dbl("Metric (Wh)", "batm_energy_full_design_wh", batm_energy_full_design_wh(s), 2);
-    print_metric_dbl("Metric (hr)", "batm_time_to_empty_hr", batm_time_to_empty_hr(s), 1);
-    print_metric_dbl("Metric (hr)", "batm_time_to_full_hr", batm_time_to_full_hr(s), 1);
+    #define X_DBL(func) \
+    do { print_metric_dbl("Metric", #func, func(s), 2); } while (0);
+
+    BATM_METRICS_LIST
+
+    #undef X_DBL
+
 }
 
 static int
@@ -191,7 +188,7 @@ print_help(void)
            "Options:\n"
            "  -h, --help     show this help and exit\n"
            "  -V, --version  show version and exit\n"
-           "  -a, --all      show common fields and metrics in a table format\n"
+           "  -a, --all      show all available fields and metrics in a table format\n"
            "  -s, --summary  show a brief one-line summary (default)\n");
 }
 
@@ -226,7 +223,7 @@ main(int argc, char **argv)
             case 'a':
                 if (mode != MODE_UNSET && mode != MODE_ALL)
                 {
-                    fprintf(stderr, "batm: -a/--all and -s/--summary are mutually exclusive\n");
+                    fprintf(stderr, "batm: -s/--summary and -a/--all are mutually exclusive\n");
                     return 1;
                 }
                 mode = MODE_ALL;
@@ -234,7 +231,7 @@ main(int argc, char **argv)
             case 's':
                 if (mode != MODE_UNSET && mode != MODE_SUMMARY)
                 {
-                    fprintf(stderr, "batm: -s/--summary and -a/--all are mutually exclusive\n");
+                    fprintf(stderr, "batm: -a/--all and -s/--summary are mutually exclusive\n");
                     return 1;
                 }
                 mode = MODE_SUMMARY;
@@ -257,13 +254,9 @@ main(int argc, char **argv)
     }
 
     if (mode == MODE_UNSET || mode == MODE_SUMMARY)
-    {
         print_summary(&snap);
-    }
     else if (mode == MODE_ALL)
-    {
         print_all(&snap);
-    }
 
     return 0;
 }
