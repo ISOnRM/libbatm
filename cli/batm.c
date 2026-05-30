@@ -1,7 +1,7 @@
 /* batm - command-line battery monitor using libbatm */
 
 #define _GNU_SOURCE
-#define BATM_CLI_VERSION "0.1.1"
+#define BATM_CLI_VERSION "0.1.2"
 
 #include <stdio.h>
 #include <stddef.h>

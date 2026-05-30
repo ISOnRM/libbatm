@@ -1,6 +1,5 @@
 /*
     libbatm - Linux battery metrics
-    (19.05.2026) TODO: Add good description -Mark
     -std=c99
 */
 #ifndef BATM_H
@@ -18,28 +17,17 @@ struct batm_snap
     /*
         Notes:
         - Struct's field names are mirroring filenames in sysfs
-
         - If file is absent, lacks access perms or is unreadable 
           then the field's value is set to sentinel value
-
         - Some batteries expose charge, some batteries do energy.
           When, for example, battery does not report energy
           respective fields are set to sentinel values
-
         - Meta fields do not represent info about battery,
           they represent info about this struct when
           data is snapshotted
-          (19.05.2026) TODO: Add later -Mark
-          (19.05.2026 later this evening) Done -Mark
-          (21.05.2026) i'll figure out what to do with the last snap time later,
-                       add meta_scanned_fields_amt, meta_name
-                       idea: enum batm_scheme { BATM_SCHEME_UNKNOWN, BATM_SCHEME_CHARGE, BATM_SCHEME_ENERGY, BATM_SCHEME_BOTH };
-
         - String values are read and written to fields as is
-
         - All descriptions of fields were partially or fully
           taken from Documentation/ABI/testing/sysfs-class-power
-
         - Examples are either taken from the same source as descriptions
           or from my own system
 
@@ -56,7 +44,7 @@ struct batm_snap
         Description:
         When the snap is updated this value is updated too
 
-        Examples:
+        Example:
         1000213380
         
         Comment:
@@ -351,6 +339,7 @@ struct batm_snap
     - When a field is added to a main structure, it should also
       be added here. Duh. Don't forget it cuz the error is silent.
       Static assertion is C11, and this lib is C99 so no check here unfortunately
+    - Usage examples are in examples/basic_test_05.c and cli/batm.c
 */
 #define BATM_SNAP_FIELDS_LIST \
     X_STR(manufacturer)                       \
@@ -440,8 +429,9 @@ batm_snap_update(const char *base,
 /*
     Notes:
     - Add metric below, add it here
-    - Second metrics won't be used where I use this list.
-      So they're not here
+    - Seconds metrics (batm_time_to_*_s) won't be used
+      where I use this list.
+    - Usage examples are in examples/basic_test_05.c and cli/batm.c
 */
 #define BATM_METRICS_LIST             \
     X_DBL(batm_energy_rate_w)         \
@@ -453,7 +443,6 @@ batm_snap_update(const char *base,
     X_DBL(batm_time_to_empty_hr)      \
 
 /* (19.05.2026) TODO: Write procedure prototypes -Mark*/
-/* (20.05.2026) On it. -Mark */
 /* (20.05.2026) Done for 0.1.0 I think -Mark */
 
 /*

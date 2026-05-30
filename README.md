@@ -19,41 +19,53 @@ Report battery status from /sys/class/power_supply/
 Options:
   -h, --help     show this help and exit
   -V, --version  show version and exit
-  -a, --all      show common fields and metrics in a table format
+  -a, --all      show all available fields and metrics in a table format
   -s, --summary  show a brief one-line summary (default)
 
 ~ $ ls /sys/class/power_supply/ | grep -i bat
 BAT1
 
-~ $ batm BAT1 -s
-BAT1: 100.0% and Not charging
+~ $ batm -s BAT1
+BAT1: 90.5% and Not charging
 
-~ $ batm BAT1 -a
+~ $ batm -a BAT1
 Type        Name                         Value                       
 
 Meta Field  meta_name                    BAT1                        
+Meta Field  meta_snap_time               Sat May 30 15:32:55 2026    
 Meta Field  meta_scanned_fields_amt      18                          
-Meta Field  meta_snap_time               Sun May 24 18:07:03 2026    
 
-Field       present                      1                           
 Field       manufacturer                 ASUS                        
 Field       model_name                   A32-K55                     
-Field       technology                   Li-ion                      
 Field       serial_number                                            
 Field       type                         Battery                     
 Field       status                       Not charging                
+Field       technology                   Li-ion                      
+Field       capacity_level               Normal                      
+Field       present                      1                           
+Field       capacity                     90                          
 Field       charge_control_end_threshold 80                          
+Field       cycle_count                  0                           
+Field       voltage_now                  16872000                    
+Field       voltage_min_design           15969000                    
+Field       current_now                  0                           
+Field       charge_now                   5037000                     
+Field       charge_full                  5568000                     
+Field       charge_full_design           5636000                     
+Field       alarm                        556000                      
 
-Metric (%)  batm_soc_pct                 100.00                      
-Metric (%)  batm_health_pct              97.94                       
-Metric (W)  batm_energy_rate_w           0.00                        
-Metric (Wh) batm_energy_full_wh          88.15                       
-Metric (Wh) batm_energy_full_design_wh   90.00                       
-Metric (hr) batm_time_to_empty_hr        nan                         
-Metric (hr) batm_time_to_full_hr         nan 
+Metric      batm_energy_rate_w           0.00                        
+Metric      batm_energy_full_wh          88.92                       
+Metric      batm_energy_full_design_wh   90.00                       
+Metric      batm_soc_pct                 90.46                       
+Metric      batm_health_pct              98.79                       
+Metric      batm_time_to_full_hr         nan                         
+Metric      batm_time_to_empty_hr        nan
 ```
 ## Status
-v0.1.0. Linux only: reads /sys/class/power_supply/. Tested on glibc.
+- v0.1.0. Linux only: reads /sys/class/power_supply/. Tested on glibc.
+- v0.1.1. Added X Macro to avoid duplication of code
+- v0.1.2. Minor documentation (header, readme) changes
 ## Library
 ### API
 Header `<batm/batm.h>` exposes `struct batm_snap`, `batm_snap_update` function that populates it and family of the metric functions
