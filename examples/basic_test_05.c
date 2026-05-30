@@ -63,5 +63,12 @@ main(int argc, char **argv)
     #undef X_STR
     #undef X_INT32
     #undef X_INT64
+
+    #define X_DBL(fn) printf("%-32s | %.2f\n", #fn, fn(&snap));
+
+    printf("\n\nMetrics:\n\n\n");
+    BATM_METRICS_LIST
+    
+    #undef X_DBL
     return 0;
 }

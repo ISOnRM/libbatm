@@ -435,6 +435,23 @@ batm_snap_update(const char *base,
                  const char *name,
                  struct batm_snap *snap);
 
+/* 30.05.2026: x macro for metrics */
+//  X_DBL("Unit type", function_name)
+
+/*
+    Notes:
+    - Add metric below, add it here
+    - Second metrics won't be used where I use this list.
+      So they're not here
+*/
+#define BATM_METRICS_LIST             \
+    X_DBL(batm_energy_rate_w)         \
+    X_DBL(batm_energy_full_wh)        \
+    X_DBL(batm_energy_full_design_wh) \
+    X_DBL(batm_soc_pct)               \
+    X_DBL(batm_health_pct)            \
+    X_DBL(batm_time_to_full_hr)       \
+    X_DBL(batm_time_to_empty_hr)      \
 
 /* (19.05.2026) TODO: Write procedure prototypes -Mark*/
 /* (20.05.2026) On it. -Mark */
