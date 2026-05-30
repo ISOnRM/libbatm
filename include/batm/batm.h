@@ -341,6 +341,75 @@ struct batm_snap
     int64_t internal_resistance;
 };
 
+/* 29.05.2026-30.05.2026 X macro time */
+/*
+    Notes:
+    - There are three types of fields, they are represented here
+      as different types of macros. See basic_test_05.c for reference
+    - Arguments are field & file names
+    - Meta fields aren't handled by this list
+    - When a field is added to a main structure, it should also
+      be added here. Duh. Don't forget it cuz the error is silent.
+      Static assertion is C11, and this lib is C99 so no check here unfortunately
+*/
+#define BATM_SNAP_FIELDS_LIST \
+    X_STR(manufacturer)                       \
+    X_STR(model_name)                         \
+    X_STR(serial_number)                      \
+    X_STR(type)                               \
+    X_STR(status)                             \
+    X_STR(charge_behaviour)                   \
+    X_STR(technology)                         \
+    X_STR(capacity_level)                     \
+    X_STR(health)                             \
+    X_STR(charge_type)                        \
+    X_INT32(present)                          \
+    X_INT32(online)                           \
+    X_INT32(capacity)                         \
+    X_INT32(capacity_alert_min)               \
+    X_INT32(capacity_alert_max)               \
+    X_INT32(charge_control_start_threshold)   \
+    X_INT32(charge_control_end_threshold)     \
+    X_INT32(cycle_count)                      \
+    X_INT32(manufacture_year)                 \
+    X_INT32(manufacture_month)                \
+    X_INT32(manufacture_day)                  \
+    X_INT64(voltage_now)                      \
+    X_INT64(voltage_min)                      \
+    X_INT64(voltage_avg)                      \
+    X_INT64(voltage_max)                      \
+    X_INT64(voltage_min_design)               \
+    X_INT64(voltage_max_design)               \
+    X_INT64(current_now)                      \
+    X_INT64(current_avg)                      \
+    X_INT64(current_max)                      \
+    X_INT64(charge_control_limit)             \
+    X_INT64(charge_control_limit_max)         \
+    X_INT64(charge_term_current)              \
+    X_INT64(precharge_current)                \
+    X_INT64(charge_now)                       \
+    X_INT64(charge_avg)                       \
+    X_INT64(charge_full)                      \
+    X_INT64(charge_full_design)               \
+    X_INT64(charge_counter)                   \
+    X_INT64(energy_now)                       \
+    X_INT64(energy_avg)                       \
+    X_INT64(energy_full)                      \
+    X_INT64(energy_full_design)               \
+    X_INT64(power_now)                        \
+    X_INT64(power_avg)                        \
+    X_INT64(temp)                             \
+    X_INT64(temp_alert_min)                   \
+    X_INT64(temp_alert_max)                   \
+    X_INT64(temp_min)                         \
+    X_INT64(temp_max)                         \
+    X_INT64(time_to_empty_now)                \
+    X_INT64(time_to_empty_avg)                \
+    X_INT64(time_to_full_now)                 \
+    X_INT64(time_to_full_avg)                 \
+    X_INT64(alarm)                            \
+    X_INT64(internal_resistance)
+
 /* 20.05.2026 Writing inits and updates */
 
 /*
